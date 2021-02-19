@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# time list to get epg
+CONFIGFILE="/usr/local/etc/setalarm.conf"
+# flag file being waked for epg
+WAKEDFOREPG="/usr/local/etc/wakedforepg.txt"
+
+# get most recent reserved time
+RECTIME=`curl -s -o - http://localhost:8888/api/reserves?isHalfWidth=true | jq -r '.reserves[] | [.startAt, .endAt] |@csv' | awk -F'[,]' '{print strftime("%F %T",substr($1,1,10))}' | sort | sed -n '1p'`
+
+#echo "RECTIME=${RECTIME}"
+
+if [ -z "${RECTIME}" ]; then
+  # no reserved
+  RECTIME=`date -d "1 years" '+%Y-%m-%d 00:00:00'`
+fi
+
+RECTIME_5BEFORE=`date -d "${RECTIME} 5 minutes ago" '+%s'`
+
+#echo "RECTIME=${RECTIME}"
+#echo "RECTIME_5BEFORE=${RECTIME_5BEFORE}"
+
+# next time of getting epg data
+# reading times from setalarm.conf
+NOWHOUR=`date +%k`
+EPGTIME=""
+REPLY_MIN=100
+if [ -f "${CONFIGFILE}" ]; then
+  while read
+  do
+    if [ -z "${EPGTIME}" ] && [ ! -z "${REPLY}" ] && [ ${REPLY} -ge 0 ] && [ ${REPLY} -le 23 ]; then
+      if [ ${REPLY} -lt ${REPLY_MIN} ]; then
+        REPLY_MIN=${REPLY}
+      fi
+      if [ ${NOWHOUR} -lt ${REPLY} ]; then
+        EPGTIME=$(date "+%Y-%m-%d $(printf %02d ${REPLY}):00:00")
+      fi
+    fi
+  done < "${CONFIGFILE}"
+fi
+
+if [ -z "${EPGTIME}" ]; then
+  if [ ${REPLY_MIN} -ge 24 ]; then
+    REPLY_MIN=0
+  fi
+  EPGTIME=$(date -d "1 days" "+%Y-%m-%d $(printf %02d ${REPLY_MIN}):00:00")
+fi
+
+EPGTIME_5BEFORE=`date -d "${EPGTIME} 5 minutes ago" '+%s'`
+
+#echo "EPGTIME=${EPGTIME}"
+#echo "EPGTIME_5BEFORE=${EPGTIME_5BEFORE}"
+
+# set alarm with more early time, RECTIME or EPGTIME
+if [ ${EPGTIME_5BEFORE} -lt ${RECTIME_5BEFORE} ]; then
+  # set alarm with EPGTIME
+  sudo bash -c "echo '1' > ${WAKEDFOREPG}"
+  rtcwake -m no -t "${EPGTIME_5BEFORE}"
+else
+  # set alarm with RECTIME
+  rtcwake -m no -t "${RECTIME_5BEFORE}"
+fi
+
+exit 0

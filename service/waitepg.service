@@ -1,0 +1,11 @@
+[Unit]
+Description=wait until getting epg
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/waitepg
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+

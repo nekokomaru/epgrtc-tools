@@ -1,0 +1,14 @@
+#!/bin/bash
+
+USRNAME=`who | sed -n '1p'`
+
+if [ -z "${USRNAME}" ]; then
+  #echo 'nobody'
+  exit 1
+
+else
+  #echo 'logged in'
+  exit 0
+
+fi
+

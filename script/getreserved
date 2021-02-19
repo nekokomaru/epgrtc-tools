@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# get most recent recording time
+
+# get starttimes -> sort -> get the first line -> convert to second
+RECSTART=`curl -s -o - http://localhost:8888/api/reserves?isHalfWidth=true | jq -r '.reserves[].startAt' | sort | sed -n '1p' | awk '{print substr($1,1,10)}'`
+
+#echo "${RECSTART}"
+
+if [ -z "${RECSTART}" ]; then
+  # no reserved
+  #echo 'no reserved'
+  exit 1
+
+else
+  RECSTART=`expr "${RECSTART}" - 3600`
+  NOW=`date +%s`
+
+  if [ ${RECSTART} -gt ${NOW} ]; then
+    # no reserved in an hour
+    #echo 'no reserved in an hour'
+    exit 1
+
+  else
+    # reserved in an hour
+    #echo 'reserved in an hour or now recording'
+    exit 0
+
+  fi
+fi
+

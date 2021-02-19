@@ -1,0 +1,29 @@
+#!/bin/bash
+
+RUNNING=`curl -s -o - http://localhost:8888/api/encode?isHalfWidth=true | jq -r '.runningItems[].recorded.startAt' | sort`
+WAITING=`curl -s -o - http://localhost:8888/api/encode?isHalfWidth=true | jq -r '.waitItems[].recorded.startAt' | sort`
+
+#echo "RUNNING=${RUNNING}"
+#echo "WAITING=${WAITING}"
+
+# remove the time when given args
+if [ ! -z "$*" ]; then
+  if [ "$1" = "${RUNNING}" ]; then
+    RUNNING=""
+  fi
+  if [ "$1" = "${WAITING}" ]; then
+    WAITING=""
+  fi
+fi
+
+if [ -z "${RUNNING}" -a -z "${WAITING}" ]; then
+  # no encoding
+  #echo 'no encoding'
+  exit 1
+
+else
+  # encoding queue exists
+  #echo 'encoding'
+  exit 0
+
+fi

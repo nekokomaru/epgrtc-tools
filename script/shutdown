@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# var is integer
+declare -i KEEP_WAKED WAIT_FREE
+
+# must keep waked = 1
+KEEP_WAKED=1
+# wait files to be unlocked by smb = 1
+WAIT_FREE=1
+
+getreserved
+if [ $? -ne 0 ]; then
+  # not reserved in an hour
+  getencoding
+  if [ $? -ne 0 ]; then
+    # not encording
+    # to be shutdown
+    KEEP_WAKED=0
+  fi
+fi
+
+getsmblock
+  if [ $? -ne 0 ]; then
+  # no files are locked by smb
+  WAIT_FREE=0
+fi
+
+if [ ${KEEP_WAKED} -eq 0 ]; then
+  if [ ${WAIT_FREE} -eq 0 ]; then
+    # no reserved, no encoding, not locked
+    # now shutdown
+    /usr/sbin/shutdown $*
+    exit 0
+    # shell can be closed, but os must run.
+  else
+    # no reserved, no encoding, but files locked
+    # shell can be closed, but os must wait files to be unlocked.
+    # so, this script to be execute per 5 min.
+    nohup bash -c 'sleep 5m; sudo shutdown_srv' &> /dev/null &
+    echo "ファイルが共有されています\nexit でターミナルを終了してください"
+    exit 0
+  fi
+else
+  if [ ${WAIT_FREE} -eq 0 ]; then
+    # reserved or encoding and not locked
+    # this script will be called when finish recording and encoding.
+    # shell can be closed, but os must run.
+    echo "録画中もしくは1時間以内に予約があります\nexit でターミナルを終了してください"
+    exit 0
+  else
+    # reserved or encoding and locked
+    # this script will be called when finish recording and encoding.
+    # shell can be closed, but os must run.
+    echo "録画中もしくは1時間以内に予約があります\nexit でターミナルを終了してください"
+    exit 0
+  fi
+fi

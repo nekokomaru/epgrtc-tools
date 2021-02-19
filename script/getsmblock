@@ -1,0 +1,16 @@
+#!/bin/bash
+
+LOCKFILE=`sudo smbstatus -L | grep 'LEASE' | sed -n '1p' | awk '{ print $8 }'`
+
+if [ -z "${LOCKFILE}" ]; then
+  # none locked files
+  #echo 'no locked files'
+  exit 1
+
+else
+  # locked files exist
+  #echo 'locked files exist'
+  exit 0
+
+fi
+

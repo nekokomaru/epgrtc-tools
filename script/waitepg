@@ -1,0 +1,17 @@
+#!/bin/bash
+
+declare -i ALARMWAKED
+ALARMWAKED=`cat /sys/class/rtc/rtc0/alarmwaked`
+WAKEDFOREPG='/usr/local/etc/wakedforepg.txt'
+
+if [ -f "${WAKEDFOREPG}" ]; then
+  # shutdown for getting epg
+  sudo rm "${WAKEDFOREPG}"
+
+  if [ ${ALARMWAKED} -eq 1 ]; then
+    # waked up for getting epg by rtc alarm
+    #echo 'to be shutdown 30min. after'
+    nohup bash -c 'sleep 30m; shutdown_srv' &> /dev/null &
+  fi
+fi
+
