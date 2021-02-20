@@ -1,7 +1,13 @@
 #!/bin/bash
 
 declare -i ALARMWAKED
-ALARMWAKED=`cat /sys/class/rtc/rtc0/alarmwaked`
+if [ -f '/sys/class/rtc/rtc0/alarmwaked' ]; then
+  ALARMWAKED=`cat /sys/class/rtc/rtc0/alarmwaked`
+else
+  # ignore checking alarmwaked flag
+  ALARMWAKED=1
+fi
+
 WAKEDFOREPG='/usr/local/etc/wakedforepg.txt'
 
 if [ -f "${WAKEDFOREPG}" ]; then
@@ -14,4 +20,3 @@ if [ -f "${WAKEDFOREPG}" ]; then
     nohup bash -c 'sleep 30m; shutdown_srv' &> /dev/null &
   fi
 fi
-
