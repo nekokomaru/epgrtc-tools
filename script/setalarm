@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ ${EUID:-${UID}} != 0 ]; then
+  echo 'not super user'
+  exit 1
+fi
+
 # time list to get epg
 CONFIGFILE="/usr/local/etc/setalarm.conf"
 # flag file being waked for epg
@@ -54,7 +59,7 @@ EPGTIME_5BEFORE=`date -d "${EPGTIME} 5 minutes ago" '+%s'`
 # set alarm with more early time, RECTIME or EPGTIME
 if [ ${EPGTIME_5BEFORE} -lt ${RECTIME_5BEFORE} ]; then
   # set alarm with EPGTIME
-  sudo bash -c "echo '1' > ${WAKEDFOREPG}"
+  sudo bash -c "echo ${EPGTIME} > ${WAKEDFOREPG}"
   rtcwake -m no -t "${EPGTIME_5BEFORE}"
 else
   # set alarm with RECTIME

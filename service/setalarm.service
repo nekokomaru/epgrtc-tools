@@ -1,12 +1,13 @@
 [Unit]
-Description=set rtc alarm
-Before=shutdown.target
-DefaultDependencies=no
+Description=Set rtc alarm
+After=pm2-root.service
+Wants=pm2-root.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/bin/setalarm
+User=root
+RemainAfterExit=true
+ExecStop=/usr/local/bin/setalarm
 
 [Install]
-WantedBy=shutdown.target
-
+WantedBy=multi-user.target

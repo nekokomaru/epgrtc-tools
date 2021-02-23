@@ -51,6 +51,7 @@ if [ ! -z "$1" ] && [ "$1" = 'install' ]; then
   echo 'install alias'
   if [ -f ${BASH_ALIASES} ]; then
     cat ${BASH_ALIASES} >> ${HOME}/${BASH_ALIASES}
+    sudo bash -c "cat ${BASH_ALIASES} >> /root/${BASH_ALIASES}"
   fi
 
 elif [ ! -z "$1" ] && [ "$1" = 'uninstall' ]; then
@@ -93,7 +94,8 @@ elif [ ! -z "$1" ] && [ "$1" = 'uninstall' ]; then
 
   if [ -f "${HOME}/${BASH_ALIASES}" ]; then
     PAT=`cat < .bash_aliases`
-    sed -i -e "s#${PAT}##g" ${HOME}/${BASH_ALIASES}
+    sed -i -e "s/${PAT}//g" ${HOME}/${BASH_ALIASES}
+    sudo sed -i -e "s/${PAT}//g" /root/${BASH_ALIASES}
   fi
 
 fi

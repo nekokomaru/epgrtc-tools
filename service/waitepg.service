@@ -3,6 +3,7 @@ Description=wait until getting epg
 
 [Service]
 Type=oneshot
+User=root
 ExecStart=/usr/local/bin/waitepg
 RemainAfterExit=yes
 

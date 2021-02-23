@@ -28,30 +28,24 @@ fi
 if [ ${KEEP_WAKED} -eq 0 ]; then
   if [ ${WAIT_FREE} -eq 0 ]; then
     # no reserved, no encoding, not locked
-    # now shutdown
+    # setalarm and shutdown now
+    /usr/local/bin/setalarm
     /usr/sbin/shutdown $*
     exit 0
-    # shell can be closed, but os must run.
   else
     # no reserved, no encoding, but files locked
     # shell can be closed, but os must wait files to be unlocked.
     # so, this script to be execute per 5 min.
     nohup bash -c 'sleep 5m; sudo shutdown_srv' &> /dev/null &
-    echo "ファイルが共有されています\nexit でターミナルを終了してください"
+    echo "ファイルが共有されています"
+    echo "exit でターミナルを終了してください"
     exit 0
   fi
 else
-  if [ ${WAIT_FREE} -eq 0 ]; then
-    # reserved or encoding and not locked
+    # reserved or encoding
     # this script will be called when finish recording and encoding.
     # shell can be closed, but os must run.
-    echo "録画中もしくは1時間以内に予約があります\nexit でターミナルを終了してください"
+    echo "録画中もしくは1時間以内に予約があります"
+    echo "exit でターミナルを終了してください"
     exit 0
-  else
-    # reserved or encoding and locked
-    # this script will be called when finish recording and encoding.
-    # shell can be closed, but os must run.
-    echo "録画中もしくは1時間以内に予約があります\nexit でターミナルを終了してください"
-    exit 0
-  fi
 fi

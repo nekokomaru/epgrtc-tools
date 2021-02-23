@@ -1,1 +1,1 @@
-alias reboot="shutdown -r now"
+alias reboot='shutdown -r now'

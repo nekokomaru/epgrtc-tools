@@ -1,12 +1,14 @@
 #!/bin/bash
 
 # var is integer
-declare -i KEEP_WAKED WAIT_FREE
+declare -i KEEP_WAKED WAIT_FREE WAIT_LOGOUT
 
 # must keep waked = 1
 KEEP_WAKED=1
 # wait files to be unlocked by smb and users to be logged out = 1
 WAIT_FREE=1
+# wait all users to be logged out
+WAIT_LOGOUT=1
 
 getreserved
 if [ $? -ne 0 ]; then
@@ -22,38 +24,48 @@ fi
 getsmblock
 if [ $? -ne 0 ]; then
   # no files are locked by smb
-  getloginusr
-  if [ $? -ne 0 ]; then
-    # no users
-    # to be shutdown
-    WAIT_FREE=0
-  fi
+  # to be shutdown
+  WAIT_FREE=0
+fi
+
+getloginusr
+if [ $? -ne 0 ]; then
+  # no users
+  # to be shutdown
+  WAIT_LOGOUT=0
 fi
 
 if [ ${KEEP_WAKED} -eq 0 ]; then
   if [ ${WAIT_FREE} -eq 0 ]; then
-    # no reserved, no encoding, not locked, no users
-    # now shutdown
-    /usr/sbin/shutdown now
-    exit 0
-    # shell can be closed, but os must run.
+    if [ ${WAIT_LOGOUT} -eq 0 ]; then
+      # no reserved, no encoding, not locked, no users
+      # setalarm and shutdown now
+      /usr/local/bin/setalarm
+      /usr/sbin/shutdown now
+      exit 0
+    else
+      # no reserved, no encoding, not locked, but anyone logged in
+      # to be shutdown by users, so system don't shutdown
+      exit 0
+    fi
   else
-    # no reserved, no encoding, but files locked or anyone login
-    # shell can be closed, but os must wait files to be unlocked.
-    # so, this script to be execute per 5 min.
-    nohup bash -c 'sleep 5m; shutdown_srv' &> /dev/null &
-    exit 0
+  # WAIT_FREE == 1
+    if [ ${WAIT_LOGOUT} -eq 0 ]; then
+      # no reserved, no encoding, files locked and no users
+      # shell can be closed, but os must wait files to be unlocked.
+      # so, this script to be execute per 5 min.
+      nohup bash -c 'sleep 5m; shutdown_srv' &> /dev/null &
+      exit 0
+    else
+      # no reserved, no encoding, files locked and anyone login
+      # to be shutdown by users, so system don't shutdown
+      exit 0
+    fi
   fi
 else
-  if [ ${WAIT_FREE} -eq 0 ]; then
-    # reserved or encoding and not locked or no users
-    # this script will be called when finish recording and encoding.
-    # shell can be closed, but os must run.
-    exit 0
-  else
-    # reserved or encoding and locked or anyone login
-    # this script will be called when finish recording and encoding.
-    # shell can be closed, but os must run.
-    exit 0
-  fi
+# KEEP_WAKED == 1
+  # reserved or encoding
+  # this script will be called when finish recording and encoding.
+  # shell can be closed, but os must run.
+  exit 0
 fi
