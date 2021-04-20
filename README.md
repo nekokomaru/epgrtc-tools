@@ -10,7 +10,7 @@ EPGStation を運用している PC を、録画及びエンコード終了時�
 作者が動作させている環境は以下の通り
 * ハードウェア
   * raspberryPi 4B
-  * [RTC board For RaspberryPI 1.0](https://nekokohouse.sakura.ne.jp/raspi/#rasp_rtc)
+  * [RTC board For RaspberryPI rev1.0/1.1](https://nekokohouse.sakura.ne.jp/raspi/#rasp_rtc)
 * ソフトウェア
   * [Ubuntu Server 20.04.2 LTS 64bit](https://ubuntu.com/download/raspberry-pi)
   * [PCF2127 driver with alarm function for kernel 5.4](https://github.com/nekokomaru/pcf2127mod)
